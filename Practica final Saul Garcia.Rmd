@@ -1,0 +1,155 @@
+---
+title: "Practica final Saul Eduardo Garcia Pacheco"
+output: 
+  html_document: default
+  html_notebook: default
+  pdf_document: default
+---
+
+```{r}
+#1.- Carga el dataset como dataframe (el valor 999 es nulo) y muestra sus primeras filas, su resúmen estadístico y la estructura de sus columnas.
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+ibm <- read.csv("IBM.csv", sep=",") #Carga el dataset como dataframe
+head(ibm) #Muestra sus primeras filas
+summary(ibm) #Muestra resumen estadistico
+str(ibm) #Muestra la estructura de las comulnas 
+
+```
+
+```{r}
+#2.- Reemplaza todos los valores nulos de la columna "Open", por su mediana
+
+x<-median(ibm[,'Open']) #asignamos la mediana a la variable x
+
+for (i in 1:nrow(ibm)){ #sustituimos el nulo(999) por la mediana
+  
+  if(ibm[i,'Open']==999)
+      ibm[i,'Open']=x
+  
+}
+  
+ibm
+
+
+
+```
+
+```{r}
+#3.- Divide la columna "Date" en "Dia", "Mes" y "Año".
+
+
+ibm1<-separate(ibm, Date, into = c("dia", "mes", "anio"), sep = "/", remove = F)
+
+ibm1
+
+
+
+```
+
+```{r}
+#4.- Cambia la columna Año a factor.
+ibm1[,'anio']<-as.factor(as.numeric(ibm1[,'anio']))
+ibm1
+```
+
+
+
+
+```{r}
+#5.- Devuelve el precio más alto de cada año.
+
+ibm1 %>%
+  select(anio, High) %>%
+  group_by(anio) %>%
+  summarise(max_high=max(High)) %>%
+  arrange((anio))
+
+
+```
+```{r}
+#6.- Muestra una tabla de frecuencias para cada año.
+
+table(ibm1[,'anio'])
+```
+
+
+
+  
+```{r}
+#7.- Obtén una nueva columna que se llame "Diferencias" y que se el resultado de restar al precio más alto el precio más bajo.
+ibm2 <- ibm1 %>% mutate(Diferencias=High-Low)
+ibm2
+```
+
+```{r}
+#8.- Ordena el dataset de forma ascendente por la columna "Diferencias".
+
+arrange(ibm2,Diferencias)
+```
+```{r}
+'9.- Muestra un resúmen estadístico del dataset en función de los siguientes valores por cada año:
+      a. Precio más alto de apertura.
+      b. Precio más bajo de cierre.
+      c. Media de la columna "Diferencia".
+      d. Número de elementos para cada año.'
+
+ibm2 %>%
+  group_by(anio) %>%
+  summarise(max.open=max(Open),min.close=min(Close),avg.dif=mean(Diferencias),numele=length(anio)) %>%
+  arrange(anio)
+
+
+```
+
+
+```{r}
+#10 Muestra el sumatorio de la variable Volumen para todos los años.
+
+ibm2 %>%
+  group_by(anio) %>%
+  summarise(suma.vol=sum(Volume)) %>%
+  arrange(anio)
+
+
+
+```
+```{r}
+#11 Obtén dos histogramas para las variables de precio de apertura y cierre, rellena los histogramas en función del año.
+
+hist(as.numeric(as.character(ibm1[,'anio'])), main='Precio apertura',ylab='Open', xlab='Anio')
+hist(ibm2[,'Open'],add=TRUE)
+
+
+```
+
+
+
+
+
+```{r}
+hist(as.numeric(as.character(ibm1[,'anio'])), main='Precio cierre',ylab='Close', xlab='Anio')
+hist(ibm2[,'Close'],add=TRUE)
+```
+
+```{r}
+#12 Muestra un diagrama de dispersión entre los precios más altos y más bajos, además muestra su recta de ajuste.
+
+ggplot(ibm2, aes(x=High,y=Low))+geom_point(shape=1)+geom_smooth(method=lm)
+```
+
+```{r}
+#13 Obtén un diagrama de caja y bigotes de la variable Adj.Close por año.
+plot(ibm2[,'anio'],ibm2[,'Adj.Close'])
+
+```
+
+
+```{r}
+#14 Muestra para cada año un diagrama de densidad para la variable "Volume".  
+
+ggplot(ibm2, aes(x=Volume)) + geom_density(fill="gray")
+```
+
